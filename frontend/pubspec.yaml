@@ -1,0 +1,29 @@
+name: mindner
+description: AI Cognitive Gaming & Memory Assistance Platform for Dementia Support.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+  http: ^1.1.0
+  provider: ^6.0.5
+  google_fonts: ^5.0.0
+  fl_chart: ^0.65.0
+  flutter_tts: ^3.8.3
+  speech_to_text: ^6.3.0
+  shared_preferences: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/audio/

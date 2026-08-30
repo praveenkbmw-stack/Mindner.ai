@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINDNER — AI Cognitive Gaming & Memory Platform</title>
+  <!-- Outfit Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Shell Container -->
+  <div id="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-area" style="display: flex; align-items: center; gap: 12px;">
+        <img src="mindner_logo.png" alt="MINDNER Logo" style="height: 60px; border-radius: 12px;">
+        <div>
+          <h1 style="line-height: 1;">MINDNER</h1>
+          <span class="sub-disclaimer">Cognitive Engagement Companion (Non-Diagnostic)</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="portal-btn" id="caregiver-portal-btn" onclick="navigateTo('caregiver-login-screen')">
+          🔒 Caregiver Portal
+        </button>
+        <button class="portal-btn hidden" id="logout-btn" onclick="logoutCaregiver()">
+          🚪 Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- ELDERLY HOME SCREEN (6-Button Layout, Removed Help/Caregiver Call) -->
+    <main id="home-screen" class="app-screen active">
+      <div class="welcome-heading">
+        <h2>Hello, Friend</h2>
+        <p>What would you like to do today? Tap one of the large buttons below.</p>
+      </div>
+
+      <div class="home-grid-6">
+        <button class="menu-card blue-card" onclick="navigateTo('games-screen')">
+          <span class="card-icon">🧠</span>
+          <span class="card-title">Cognitive Games</span>
+          <span class="card-desc">Fun memory & logic puzzles</span>
+        </button>
+
+        <button class="menu-card green-card" onclick="navigateTo('memories-screen')">
+          <span class="card-icon">📖</span>
+          <span class="card-title">My Memories</span>
+          <span class="card-desc">Your custom photo timeline</span>
+        </button>
+
+        <button class="menu-card orange-card" onclick="navigateTo('family-voices-screen')">
+          <span class="card-icon">🎙️</span>
+          <span class="card-title">Family Voices</span>
+          <span class="card-desc">Listen to recorded loved ones</span>
+        </button>
+
+        <button class="menu-card purple-card" onclick="navigateTo('assistant-screen')">
+          <span class="card-icon">🗣️</span>
+          <span class="card-title">Talk to Assistant</span>
+          <span class="card-desc">Speak with your voice companion</span>
+        </button>
+
+        <button class="menu-card yellow-card" onclick="navigateTo('routine-screen')">
+          <span class="card-icon">📅</span>
+          <span class="card-title">Today's Routine</span>
+          <span class="card-desc">Your daily checklists</span>
+        </button>
+
+        <button class="menu-card cyan-card" onclick="navigateTo('progress-screen')">
+          <span class="card-icon">📊</span>
+          <span class="card-title">My Progress</span>
+          <span class="card-desc">Track gaming accuracy scores</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- COGNITIVE GAMES SCREEN -->
+    <main id="games-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>Cognitive Games</h2>
+      </div>
+      
+      <!-- Games Selector -->
+      <div id="games-selector">
+        <p class="difficulty-indicator">Current Difficulty Tier: <strong id="game-tier-display">Medium</strong> (AI Adaptive)</p>
+        <div class="game-list">
+          <div class="game-item blue-card" onclick="startMemoryMatch()">
+            <span class="game-icon">🃏</span>
+            <div class="game-info">
+              <h3>Memory Card Match</h3>
+              <p>Match pairs of symbols. Difficulty automatically adjusts.</p>
+            </div>
+          </div>
+          <div class="game-item green-card" onclick="startPhotoRecall()">
+            <span class="game-icon">👤</span>
+            <div class="game-info">
+              <h3>Photo Recall</h3>
+              <p>Identify your family members and recall special memories.</p>
+            </div>
+          </div>
+          <div class="game-item orange-card" onclick="startRoutineOrdering()">
+            <span class="game-icon">🔄</span>
+            <div class="game-info">
+              <h3>Routine Ordering</h3>
+              <p>Arrange morning routine steps in chronological order.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE GAME BOARD -->
+      <div id="active-game-board" class="hidden">
+        <div class="game-header">
+          <h3 id="active-game-title">Game Title</h3>
+          <button class="close-game-btn" onclick="closeActiveGame()">Close Game ×</button>
+        </div>
+        <div id="game-playground"></div>
+      </div>
+    </main>
+
+    <!-- MEMORY TIMELINE SCREEN (MODIFIED WITH UPLOAD & LOCK MEMORY) -->
+    <main id="memories-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>Memory Journey</h2>
+      </div>
+
+      <div class="timeline-split">
+        <!-- Form upload block -->
+        <div class="timeline-form-panel">
+          <h3>Create Personal Memory</h3>
+          <form id="memory-form-elderly" onsubmit="handleMemorySubmit(event)">
+            <div class="form-group">
+              <label>📷 UPLOAD IMAGE:</label>
+              <input type="file" id="elderly-mem-image" accept="image/*" required>
+            </div>
+            <div class="form-group">
+              <label for="elderly-mem-title">Memory Title:</label>
+              <input type="text" id="elderly-mem-title" placeholder="e.g. Family Trip" required>
+            </div>
+            <div class="form-group">
+              <label for="elderly-mem-desc">Memory Description:</label>
+              <textarea id="elderly-mem-desc" rows="2" placeholder="Tell the story briefly..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="elderly-mem-year">Date/Year:</label>
+              <input type="number" id="elderly-mem-year" placeholder="e.g. 1978" required>
+            </div>
+            <div class="form-group">
+              <label for="elderly-mem-people">People in the Memory:</label>
+              <input type="text" id="elderly-mem-people" placeholder="e.g. Daughter, Spouse" required>
+            </div>
+
+            <!-- LOCK VOICE RECORDING BUTTON -->
+            <button type="button" class="lock-memory-btn" id="lock-voice-btn" onclick="openMemoryRecordingDialog()">
+              🔒 LOCK YOUR MEMORY (Record Voice)
+            </button>
+            <span id="recording-status-msg" style="font-size: 14px; font-weight: bold; color: var(--accent-green);"></span>
+            
+            <button type="submit" class="save-form-btn">Save Memory to Timeline</button>
+          </form>
+        </div>
+
+        <!-- Render timeline -->
+        <div class="timeline-scroll-panel">
+          <div class="timeline-container" id="timeline-list">
+            <!-- Rendered dynamically in app.js -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- FAMILY VOICES SCREEN (NEW VIEW) -->
+    <main id="family-voices-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>Family Voices</h2>
+      </div>
+      <p class="intro-text">Listen to greetings recorded directly by your loved ones.</p>
+
+      <div class="timeline-split">
+        <div class="timeline-form-panel">
+          <h3>➕ ADD FAMILY VOICE</h3>
+          <form id="family-member-form" onsubmit="handleFamilyMemberSubmit(event)">
+            <div class="form-group">
+              <label>📷 Upload Person's Image:</label>
+              <input type="file" id="family-image" accept="image/*" required>
+            </div>
+            <div class="form-group">
+              <label for="family-name">Person Name:</label>
+              <input type="text" id="family-name" placeholder="e.g. Arun" required>
+            </div>
+            <div class="form-group">
+              <label for="family-relation">Relationship:</label>
+              <input type="text" id="family-relation" placeholder="e.g. Son" required>
+            </div>
+            
+            <!-- Record Voice -->
+            <button type="button" class="lock-memory-btn" id="record-family-btn" onclick="openFamilyRecordingDialog()">
+              🎙️ Record Voice message
+            </button>
+            <span id="family-recording-status" style="font-size: 14px; font-weight: bold; color: var(--accent-green);"></span>
+            
+            <button type="submit" class="save-form-btn">💾 SAVE VOICE</button>
+          </form>
+        </div>
+
+        <div class="timeline-scroll-panel">
+          <div class="family-list-grid" id="family-voices-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- TODAY'S ROUTINE SCREEN -->
+    <main id="routine-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>Today's Routine</h2>
+      </div>
+      <p class="intro-text">Check off tasks as you finish them today. Tap on any item to read instructions.</p>
+      
+      <div class="routine-list" id="routine-checklist">
+        <!-- Rendered dynamically in app.js -->
+      </div>
+    </main>
+
+    <!-- VOICE ASSISTANT SCREEN (FIXED MICROPHONE) -->
+    <main id="assistant-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>Voice Companion</h2>
+      </div>
+
+      <div class="language-selector">
+        <label for="lang-select">Choose Language / ভাষা:</label>
+        <select id="lang-select" onchange="changeAssistantLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="bn">Bengali (বাংলা)</option>
+          <option value="as">Assamese (অসমীয়া)</option>
+        </select>
+      </div>
+
+      <div class="assistant-content">
+        <div class="assistant-orb-container">
+          <div class="pulse-ring" id="assistant-pulse"></div>
+          <div class="assistant-orb">🗣️</div>
+        </div>
+        <h3 id="assistant-speech-bubble" class="speech-bubble">I am listening. How can I help you today?</h3>
+        
+        <!-- Interactive Transcript Dialog -->
+        <div class="transcript-display-box">
+          <p id="assistant-text-history" style="font-size:18px; color:var(--text-light); text-align:left; max-height:100px; overflow-y:auto;"></p>
+          <p id="user-transcript" class="user-transcript">Say something like: "What is my schedule today?"</p>
+        </div>
+      </div>
+
+      <div class="assistant-controls">
+        <button class="mic-btn" id="mic-trigger" onclick="toggleSpeechRecognition()">
+          🎙️ SPEAK
+        </button>
+      </div>
+    </main>
+
+    <!-- MY PROGRESS SCREEN (COGNITIVE GAMES METRICS ONLY) -->
+    <main id="progress-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
+        <h2>My Progress Reports</h2>
+      </div>
+
+      <div class="caregiver-tabs" style="margin-top:12px;">
+        <button class="progress-tab active" onclick="switchProgressTab('categories')">Cognitive Levels</button>
+        <button class="progress-tab" onclick="switchProgressTab('trends')">Historical Trends</button>
+      </div>
+
+      <!-- Categories progress list -->
+      <div id="progress-categories" class="progress-content active-content">
+        <h3 style="margin-top: 16px;">Cognitive Performance Status</h3>
+        <p class="intro-text">These levels are calculated ONLY from your game plays (Match cards, recall accuracy, and response times).</p>
+        
+        <div class="progress-list-bars">
+          <div class="bar-group">
+            <div class="bar-header"><span>Memory</span><strong id="prog-val-memory">80%</strong></div>
+            <div class="bar-track"><div class="bar-fill" id="fill-memory" style="width: 80%;"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-header"><span>Attention</span><strong id="prog-val-attention">70%</strong></div>
+            <div class="bar-track"><div class="bar-fill" id="fill-attention" style="width: 70%;"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-header"><span>Pattern Recognition</span><strong id="prog-val-pattern">90%</strong></div>
+            <div class="bar-track"><div class="bar-fill" id="fill-pattern" style="width: 90%;"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-header"><span>Reaction</span><strong id="prog-val-reaction">60%</strong></div>
+            <div class="bar-track"><div class="bar-fill" id="fill-reaction" style="width: 60%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trend lines -->
+      <div id="progress-trends" class="progress-content">
+        <h3 style="margin-top: 16px;">Daily & Weekly Game Accuracy Chart</h3>
+        <div class="chart-container">
+          <svg class="analytics-chart" viewBox="0 0 500 200" id="game-performance-chart">
+            <!-- Gridlines -->
+            <line x1="20" y1="180" x2="480" y2="180" stroke="#E2E8F0" />
+            <line x1="20" y1="100" x2="480" y2="100" stroke="#E2E8F0" stroke-dasharray="4" />
+            <line x1="20" y1="20" x2="480" y2="20" stroke="#E2E8F0" />
+            
+            <!-- Dynamic trend lines drawn by JS -->
+            <polyline fill="none" stroke="#66BB6A" stroke-width="4" id="trend-line-points" points="
+              20,150
+              120,140
+              220,120
+              320,100
+              420,80" />
+          </svg>
+          <div class="chart-labels">
+            <span>Session 1</span>
+            <span>Session 2</span>
+            <span>Session 3</span>
+            <span>Session 4</span>
+            <span>Session 5 (Recent)</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- CAREGIVER SECURE LOGIN SCREEN (NEW VIEW) -->
+    <main id="caregiver-login-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Exit Portal</button>
+        <h2>Caregiver Administration Login</h2>
+      </div>
+
+      <div class="form-card">
+        <form id="caregiver-login-form" onsubmit="handleCaregiverLogin(event)">
+          <div class="form-group">
+            <label for="login-username">Username or Email Address:</label>
+            <input type="text" id="login-username" placeholder="Enter username/email" required>
+          </div>
+          <div class="form-group">
+            <label for="login-pass">Password:</label>
+            <input type="password" id="login-pass" placeholder="Password" required>
+          </div>
+          <button type="submit" class="save-form-btn">Secure Login</button>
+          <div style="text-align: center; margin-top: 16px;">
+            <a href="#" onclick="navigateTo('caregiver-register-screen')" style="color:var(--primary-blue); font-weight:bold;">New Caregiver? Register Secure Account</a>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- CAREGIVER SECURE REGISTER SCREEN (NEW VIEW) -->
+    <main id="caregiver-register-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('caregiver-login-screen')">← Back to Login</button>
+        <h2>Caregiver Administrator Registration</h2>
+      </div>
+
+      <div class="form-card">
+        <form id="caregiver-register-form" onsubmit="handleCaregiverRegister(event)">
+          <div class="form-group">
+            <label for="reg-name">Full Name:</label>
+            <input type="text" id="reg-name" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email Address:</label>
+            <input type="email" id="reg-email" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Phone Number:</label>
+            <input type="text" id="reg-phone" placeholder="e.g. +91 98765 43210" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-username">Username:</label>
+            <input type="text" id="reg-username" placeholder="johndoe" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-pass">Password:</label>
+            <input type="password" id="reg-pass" required>
+          </div>
+          <div class="form-group">
+            <label for="reg-conf-pass">Confirm Password:</label>
+            <input type="password" id="reg-conf-pass" required>
+          </div>
+          <button type="submit" class="save-form-btn">Register Secure Account</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- CAREGIVER DASHBOARD SCREEN (SECURED) -->
+    <main id="caregiver-dashboard-screen" class="app-screen">
+      <div class="screen-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')">← Exit Caregiver Panel</button>
+        <h2>Caregiver Administration Console</h2>
+      </div>
+
+      <div class="caregiver-tabs">
+        <button class="tab-link active" onclick="switchCaregiverTab('analytics')">Metrics & Analytics</button>
+        <button class="tab-link" onclick="switchCaregiverTab('patient-list')">Manage Patients</button>
+        <button class="tab-link" onclick="switchCaregiverTab('add-routine')">Configure Routines</button>
+      </div>
+
+      <!-- ANALYTICS TAB -->
+      <div id="caregiver-analytics" class="caregiver-tab-content active-tab">
+        <h3>Cognitive Performance Analytics</h3>
+        <p class="disclaimer-alert">⚠️ Cognitive Engagement & Activity Tracking for Supportive Purposes (Non-Diagnostic).</p>
+        
+        <div class="analytics-row">
+          <div class="metric-card">
+            <h4>Average Game Match Accuracy</h4>
+            <div class="metric-value" id="cg-accuracy-display">75%</div>
+            <p>Calculated strictly from patient game logs.</p>
+          </div>
+          <div class="metric-card">
+            <h4>Median Performance Speed</h4>
+            <div class="metric-value" id="cg-speed-display">8.4s</div>
+            <p>Calculated from recent 5 gaming actions.</p>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <h4>Weekly Game plays accuracy score line</h4>
+          <svg class="analytics-chart" viewBox="0 0 500 200" id="caregiver-svg-graph">
+            <!-- Drawn dynamically in app.js -->
+            <polyline fill="none" stroke="#4A90E2" stroke-width="4" id="cg-trend-points" points="20,150 120,140 220,120 320,100 420,80" />
+          </svg>
+          <div class="chart-labels">
+            <span>S1</span><span>S2</span><span>S3</span><span>S4</span><span>S5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATIENTS TAB -->
+      <div id="caregiver-patient-list" class="caregiver-tab-content">
+        <h3>Manage Patient Association</h3>
+        <p class="intro-text">Identify and register elderly users linked to your caregiver login.</p>
+        
+        <div class="form-group">
+          <label for="new-patient-name">Patient Full Name:</label>
+          <input type="text" id="new-patient-name" placeholder="Enter patient name">
+          <button class="save-form-btn" onclick="addNewPatientAssociation()" style="margin-top:10px;">➕ Register Patient</button>
+        </div>
+        
+        <h4 style="margin-top: 24px;">Linked Patients:</h4>
+        <div id="linked-patients-container" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+          <!-- Managed dynamically -->
+        </div>
+      </div>
+
+      <!-- CONFIGURE ROUTINES TAB -->
+      <div id="caregiver-add-routine" class="caregiver-tab-content">
+        <h3>Create Patient Routine Item</h3>
+        <form id="routine-form" onsubmit="handleRoutineSubmit(event)">
+          <div class="form-group">
+            <label for="rot-title">Routine Title:</label>
+            <input type="text" id="rot-title" placeholder="e.g. Morning Medicine" required>
+          </div>
+          <div class="form-group">
+            <label for="rot-time">Schedule Time (HH:MM):</label>
+            <input type="text" id="rot-time" placeholder="08:30" required>
+          </div>
+          <div class="form-group">
+            <label for="rot-desc">Clear Instruction Details:</label>
+            <textarea id="rot-desc" rows="3" placeholder="Keep instructions very simple and short..." required></textarea>
+          </div>
+          <button type="submit" class="save-form-btn">Update Routine Checklist</button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Audio recording / dialog overlay (Simulated browser micro recorder) -->
+    <div id="recorder-modal" class="hidden-modal-overlay">
+      <div class="modal-card">
+        <h3>🔴 VOICE RECORDING</h3>
+        <p>Record your personal message aloud.</p>
+        <div class="recording-visualizer">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div style="display: flex; gap:16px; margin-top:20px; justify-content:center;">
+          <button class="portal-btn" id="modal-stop-btn">Stop & Save</button>
+          <button class="portal-btn" id="modal-cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer medical protection notice -->
+    <footer class="app-footer">
+      MINDNER digital companion platform is non-clinical and is for supportive engagement purposes.
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
