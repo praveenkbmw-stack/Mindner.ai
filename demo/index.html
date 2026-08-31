@@ -132,25 +132,51 @@
         <h2>Memory Journey</h2>
       </div>
 
+      <!-- Categories Filter Bar -->
+      <div class="category-filter-bar" id="memory-category-filter">
+        <!-- Rendered dynamically (All, Wedding Day, Childhood, School, Family, Career, Important Events, Custom) -->
+      </div>
+
       <div class="timeline-split">
         <!-- Form upload block -->
         <div class="timeline-form-panel">
           <h3>Create Personal Memory</h3>
+          
+          <!-- Quick Add / Custom Category Creator -->
+          <div class="custom-category-box">
+            <label style="font-size:14px; font-weight:bold; color:var(--primary-blue);">✨ Customize Memory Journey</label>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+              <input type="text" id="new-category-input" placeholder="New Category (e.g., Holidays)" style="flex-grow:1; font-size:14px; min-height:40px; padding:6px 10px;">
+              <button type="button" class="portal-btn" onclick="addNewCustomCategory()" style="padding:4px 12px; min-height:40px; font-size:13px;">+ Add</button>
+            </div>
+          </div>
+
           <form id="memory-form-elderly" onsubmit="handleMemorySubmit(event)">
             <div class="form-group">
+              <label for="elderly-mem-category">Select Category:</label>
+              <select id="elderly-mem-category" required>
+                <option value="Wedding Day">Wedding Day</option>
+                <option value="Childhood">Childhood</option>
+                <option value="School">School</option>
+                <option value="Family">Family</option>
+                <option value="Career">Career</option>
+                <option value="Important Events" selected>Important Events</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>📷 UPLOAD IMAGE:</label>
-              <input type="file" id="elderly-mem-image" accept="image/*" required>
+              <input type="file" id="elderly-mem-image" accept="image/*">
             </div>
             <div class="form-group">
               <label for="elderly-mem-title">Memory Title:</label>
-              <input type="text" id="elderly-mem-title" placeholder="e.g. Family Trip" required>
+              <input type="text" id="elderly-mem-title" placeholder="e.g. Family Trip to Shillong" required>
             </div>
             <div class="form-group">
               <label for="elderly-mem-desc">Memory Description:</label>
               <textarea id="elderly-mem-desc" rows="2" placeholder="Tell the story briefly..." required></textarea>
             </div>
             <div class="form-group">
-              <label for="elderly-mem-year">Date/Year:</label>
+              <label for="elderly-mem-year">Date / Year:</label>
               <input type="number" id="elderly-mem-year" placeholder="e.g. 1978" required>
             </div>
             <div class="form-group">
@@ -177,7 +203,7 @@
       </div>
     </main>
 
-    <!-- FAMILY VOICES SCREEN (NEW VIEW) -->
+    <!-- FAMILY VOICES SCREEN (RESPONSIVE GRID) -->
     <main id="family-voices-screen" class="app-screen">
       <div class="screen-header">
         <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
@@ -191,7 +217,7 @@
           <form id="family-member-form" onsubmit="handleFamilyMemberSubmit(event)">
             <div class="form-group">
               <label>📷 Upload Person's Image:</label>
-              <input type="file" id="family-image" accept="image/*" required>
+              <input type="file" id="family-image" accept="image/*">
             </div>
             <div class="form-group">
               <label for="family-name">Person Name:</label>
@@ -214,7 +240,7 @@
 
         <div class="timeline-scroll-panel">
           <div class="family-list-grid" id="family-voices-list">
-            <!-- Rendered dynamically -->
+            <!-- Rendered dynamically in responsive grid -->
           </div>
         </div>
       </div>
@@ -233,7 +259,7 @@
       </div>
     </main>
 
-    <!-- VOICE ASSISTANT SCREEN (FIXED MICROPHONE) -->
+    <!-- VOICE ASSISTANT SCREEN (WITH STREAM PLAYBACK CONTROLS) -->
     <main id="assistant-screen" class="app-screen">
       <div class="screen-header">
         <button class="back-btn" onclick="navigateTo('home-screen')">← Back Home</button>
@@ -258,8 +284,15 @@
         
         <!-- Interactive Transcript Dialog -->
         <div class="transcript-display-box">
-          <p id="assistant-text-history" style="font-size:18px; color:var(--text-light); text-align:left; max-height:100px; overflow-y:auto;"></p>
-          <p id="user-transcript" class="user-transcript">Say something like: "What is my schedule today?"</p>
+          <div id="assistant-text-history" class="transcript-stream">Welcome! You can ask me anything about your day, routine, memories, or stories.</div>
+          <p id="user-transcript" class="user-transcript" style="margin-top:8px;">Say something like: "Tell me about my day" or "Tell me a soothing story."</p>
+          
+          <!-- Audio Playback Controls (Play / Pause / Stop) -->
+          <div class="tts-playback-bar">
+            <button class="tts-btn tts-play-btn" id="tts-play-btn" onclick="resumeOrPlayAssistantVoice()">▶ Play</button>
+            <button class="tts-btn tts-pause-btn" id="tts-pause-btn" onclick="pauseAssistantVoice()">⏸ Pause</button>
+            <button class="tts-btn tts-stop-btn" id="tts-stop-btn" onclick="stopSpeech()">⏹ Stop</button>
+          </div>
         </div>
       </div>
 
@@ -309,7 +342,8 @@
 
       <!-- Trend lines -->
       <div id="progress-trends" class="progress-content">
-        <h3 style="margin-top: 16px;">Daily & Weekly Game Accuracy Chart</h3>
+        <h3 style="margin-top: 16px;">Daily Game Accuracy Trends (Days)</h3>
+        <p class="intro-text" style="margin-bottom:8px;">Calculated strictly from actual cognitive game sessions for your account across individual days.</p>
         <div class="chart-container">
           <svg class="analytics-chart" viewBox="0 0 500 200" id="game-performance-chart">
             <!-- Gridlines -->
@@ -317,21 +351,15 @@
             <line x1="20" y1="100" x2="480" y2="100" stroke="#E2E8F0" stroke-dasharray="4" />
             <line x1="20" y1="20" x2="480" y2="20" stroke="#E2E8F0" />
             
-            <!-- Dynamic trend lines drawn by JS -->
-            <polyline fill="none" stroke="#66BB6A" stroke-width="4" id="trend-line-points" points="
-              20,150
-              120,140
-              220,120
-              320,100
-              420,80" />
+            <!-- Dynamic trend line drawn by JS based on actual daily data -->
+            <polyline fill="none" stroke="#66BB6A" stroke-width="4" id="trend-line-points" points="" />
           </svg>
-          <div class="chart-labels">
-            <span>Session 1</span>
-            <span>Session 2</span>
-            <span>Session 3</span>
-            <span>Session 4</span>
-            <span>Session 5 (Recent)</span>
+          <div class="chart-labels" id="progress-chart-day-labels">
+            <!-- Rendered dynamically with actual dates/days -->
           </div>
+        </div>
+        <div id="progress-daily-table" style="margin-top: 14px; overflow-x: auto;">
+          <!-- Rendered dynamically with Day, Accuracy, and Session count -->
         </div>
       </div>
     </main>
@@ -408,7 +436,7 @@
 
       <div class="caregiver-tabs">
         <button class="tab-link active" onclick="switchCaregiverTab('analytics')">Metrics & Analytics</button>
-        <button class="tab-link" onclick="switchCaregiverTab('patient-list')">Manage Patients</button>
+        <button class="tab-link" onclick="switchCaregiverTab('photo-recall-custom')">🖼️ Customize Photo Recall</button>
         <button class="tab-link" onclick="switchCaregiverTab('add-routine')">Configure Routines</button>
       </div>
 
@@ -421,41 +449,74 @@
           <div class="metric-card">
             <h4>Average Game Match Accuracy</h4>
             <div class="metric-value" id="cg-accuracy-display">75%</div>
-            <p>Calculated strictly from patient game logs.</p>
+            <p>Calculated strictly from active user game logs.</p>
           </div>
           <div class="metric-card">
             <h4>Median Performance Speed</h4>
             <div class="metric-value" id="cg-speed-display">8.4s</div>
-            <p>Calculated from recent 5 gaming actions.</p>
+            <p>Calculated from recent gaming actions.</p>
           </div>
         </div>
 
         <div class="chart-container">
-          <h4>Weekly Game plays accuracy score line</h4>
+          <h4>Daily Game Plays Accuracy Trend Line (Days)</h4>
           <svg class="analytics-chart" viewBox="0 0 500 200" id="caregiver-svg-graph">
             <!-- Drawn dynamically in app.js -->
-            <polyline fill="none" stroke="#4A90E2" stroke-width="4" id="cg-trend-points" points="20,150 120,140 220,120 320,100 420,80" />
+            <polyline fill="none" stroke="#4A90E2" stroke-width="4" id="cg-trend-points" points="" />
           </svg>
-          <div class="chart-labels">
-            <span>S1</span><span>S2</span><span>S3</span><span>S4</span><span>S5</span>
+          <div class="chart-labels" id="cg-chart-day-labels">
+            <!-- Rendered dynamically with actual dates/days -->
           </div>
         </div>
       </div>
 
-      <!-- PATIENTS TAB -->
-      <div id="caregiver-patient-list" class="caregiver-tab-content">
-        <h3>Manage Patient Association</h3>
-        <p class="intro-text">Identify and register elderly users linked to your caregiver login.</p>
+      <!-- CUSTOMIZE PHOTO RECALL TAB (REPLACED MANAGE PATIENTS) -->
+      <div id="caregiver-photo-recall-custom" class="caregiver-tab-content">
+        <h3>🖼️ Customize Photo Recall Game</h3>
+        <p class="intro-text">Import customized photos and names of loved ones to be directly recognized by the elderly user in the Photo Recall cognitive game.</p>
         
-        <div class="form-group">
-          <label for="new-patient-name">Patient Full Name:</label>
-          <input type="text" id="new-patient-name" placeholder="Enter patient name">
-          <button class="save-form-btn" onclick="addNewPatientAssociation()" style="margin-top:10px;">➕ Register Patient</button>
-        </div>
-        
-        <h4 style="margin-top: 24px;">Linked Patients:</h4>
-        <div id="linked-patients-container" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-          <!-- Managed dynamically -->
+        <div class="timeline-split" style="gap:20px;">
+          <!-- Form upload panel -->
+          <div class="timeline-form-panel" style="width: 360px;">
+            <h4>Add Person / Photo</h4>
+            <form id="photo-recall-form" onsubmit="handlePhotoRecallSubmit(event)">
+              <div class="form-group">
+                <label for="pr-image-input">📷 Import Image (JPG, JPEG, PNG, WEBP):</label>
+                <input type="file" id="pr-image-input" accept="image/jpeg,image/png,image/webp,image/jpg" onchange="previewPhotoRecallImage(event)" required>
+              </div>
+
+              <!-- Image preview container -->
+              <div id="pr-image-preview-container" style="display:none; margin: 8px 0; text-align:center;">
+                <img id="pr-image-preview" src="" alt="Preview" style="max-width:100%; max-height:160px; border-radius:12px; border:2px solid var(--primary-blue); object-fit:cover;">
+              </div>
+
+              <div class="form-group">
+                <label for="pr-person-name">Name:</label>
+                <input type="text" id="pr-person-name" placeholder="e.g. Arun" required>
+              </div>
+
+              <div class="form-group">
+                <label for="pr-relationship">Relationship (e.g. Son, Daughter):</label>
+                <input type="text" id="pr-relationship" placeholder="e.g. Son">
+              </div>
+
+              <div class="form-group">
+                <label for="pr-description">Optional Description:</label>
+                <textarea id="pr-description" rows="2" placeholder="e.g. Eldest son who lives in Guwahati"></textarea>
+              </div>
+
+              <button type="submit" class="save-form-btn" id="pr-save-btn">💾 Save to Photo Recall</button>
+            </form>
+          </div>
+
+          <!-- Existing customized photo list -->
+          <div class="timeline-scroll-panel">
+            <h4>Active Customized Photos for User</h4>
+            <p style="font-size:14px; color:var(--text-light); margin-bottom:12px;">These photos will appear in the elderly user's Photo Recall cognitive game with their matching names.</p>
+            <div id="custom-photo-recall-list" class="family-list-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+              <!-- Rendered dynamically in app.js -->
+            </div>
+          </div>
         </div>
       </div>
 

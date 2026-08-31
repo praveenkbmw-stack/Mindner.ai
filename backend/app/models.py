@@ -39,14 +39,20 @@ class Memory(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True) # Alias / direct user FK
+    category_name = Column(String, nullable=False, default="Important Events")
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
+    photo_url = Column(String, nullable=True) # Photo url
     image_path = Column(String, nullable=True) # Path to uploaded photograph
+    voice_recording_url = Column(String, nullable=True) # Direct voice recording url
+    is_custom = Column(Boolean, default=False)
+    year = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     # Relationships
-    patient = relationship("Patient", back_populates="memories")
+    patient = relationship("Patient", back_populates="memories", foreign_keys=[patient_id])
     voice_recordings = relationship("MemoryVoiceRecording", back_populates="memory", cascade="all, delete-orphan")
 
 class MemoryVoiceRecording(Base):
@@ -68,13 +74,16 @@ class FamilyMember(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True)
     name = Column(String, nullable=False)
     relationship = Column(String, nullable=False) # e.g. "Son", "Daughter"
+    image_url = Column(String, nullable=True) # Family member image url
     image_path = Column(String, nullable=True) # Path to family member's photo
+    voice_recording_url = Column(String, nullable=True) # Family voice recording url
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships
-    patient = relationship("Patient", back_populates="family_members")
+    patient = relationship("Patient", back_populates="family_members", foreign_keys=[patient_id])
     voice_recordings = relationship("FamilyVoiceRecording", back_populates="family_member", cascade="all, delete-orphan")
 
 class FamilyVoiceRecording(Base):
@@ -95,17 +104,19 @@ class GameSession(Base):
     __tablename__ = "game_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
-    game_type = Column(String, nullable=False) # "memory_match", "photo_recall", "routine_ordering"
-    difficulty = Column(String, nullable=False) # "Easy", "Medium", "Hard" or specific numeric tiers
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True)
+    user_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True)
+    game_type = Column(String, nullable=False) # "routine_sequencing", "memory_match", "photo_recall"
+    difficulty = Column(String, nullable=False) # "Easy", "Medium", "Hard"
     score = Column(Integer, nullable=False)
-    accuracy = Column(Float, nullable=False) # percentage accuracy
-    response_time = Column(Float, nullable=False) # response time in seconds
+    accuracy = Column(Float, nullable=False) # percentage accuracy e.g., 85.5
+    response_time_seconds = Column(Float, nullable=True) # response time in seconds
+    response_time = Column(Float, nullable=True) # backward compat
     attempts = Column(Integer, nullable=False)
     completed_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships
-    patient = relationship("Patient", back_populates="game_sessions")
+    patient = relationship("Patient", back_populates="game_sessions", foreign_keys=[patient_id])
 
 class RoutineItem(Base):
     __tablename__ = "routine_items"
@@ -121,3 +132,18 @@ class RoutineItem(Base):
 
     # Relationships
     patient = relationship("Patient", back_populates="routines")
+
+class PhotoRecallItem(Base):
+    __tablename__ = "photo_recall_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=True)
+    person_name = Column(String, nullable=False)
+    relationship = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    image_path = Column(String, nullable=False) # Path to uploaded photo
+    image_url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+

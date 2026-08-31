@@ -3,30 +3,69 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from ..database import get_db
-from ..models import GameSession, Patient
-from ..schemas import GameSessionCreate, GameSessionResponse, DifficultyAdjustmentResponse
+from ..models import GameSession, Patient, PhotoRecallItem
+from ..schemas import GameSessionCreate, GameSessionResponse, DifficultyAdjustmentResponse, PhotoRecallItemCreate, PhotoRecallItemResponse
 from ..ai.difficulty_engine import AdaptiveDifficultyEngine
 from .auth import get_current_caregiver
 
 router = APIRouter()
 
+@router.post("/photo-recall/custom", response_model=PhotoRecallItemResponse)
+def add_custom_photo_recall_item(
+    item_in: PhotoRecallItemCreate,
+    db: Session = Depends(get_db)
+):
+    uid = item_in.user_id or item_in.patient_id or 1
+    new_item = PhotoRecallItem(
+        user_id=uid,
+        patient_id=uid,
+        person_name=item_in.person_name,
+        relationship=item_in.relationship,
+        description=item_in.description,
+        image_path=item_in.image_path,
+        image_url=item_in.image_url or item_in.image_path
+    )
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+    return new_item
+
+@router.get("/photo-recall/{user_id}", response_model=List[PhotoRecallItemResponse])
+def get_user_photo_recall_items(user_id: int, db: Session = Depends(get_db)):
+    items = db.query(PhotoRecallItem).filter(
+        (PhotoRecallItem.user_id == user_id) | (PhotoRecallItem.patient_id == user_id)
+    ).order_by(PhotoRecallItem.created_at.desc()).all()
+    return items
+
+@router.delete("/photo-recall/{item_id}")
+def delete_photo_recall_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(PhotoRecallItem).filter(PhotoRecallItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Photo recall item not found")
+    db.delete(item)
+    db.commit()
+    return {"status": "success", "message": "Photo recall item deleted"}
+
+
 @router.post("/log", response_model=GameSessionResponse)
+@router.post("/session", response_model=GameSessionResponse)
 def log_game_session(
     session_in: GameSessionCreate,
     db: Session = Depends(get_db)
 ):
-    # Ensure patient exists
-    patient = db.query(Patient).filter(Patient.id == session_in.patient_id).first()
-    if not patient:
-        raise HTTPException(status_code=404, detail="Patient not found")
+    pid = session_in.user_id or session_in.patient_id or 1
+    
+    resp_time = session_in.response_time_seconds if session_in.response_time_seconds is not None else (session_in.response_time or 0.0)
 
     new_session = GameSession(
-        patient_id=session_in.patient_id,
+        patient_id=pid,
+        user_id=pid,
         game_type=session_in.game_type,
         difficulty=session_in.difficulty,
         score=session_in.score,
         accuracy=session_in.accuracy,
-        response_time=session_in.response_time,
+        response_time_seconds=resp_time,
+        response_time=resp_time,
         attempts=session_in.attempts
     )
     db.add(new_session)
@@ -51,7 +90,7 @@ def adjust_difficulty(
     ).order_by(GameSession.completed_at.desc()).limit(5).all()
 
     past_sessions = [
-        {"response_time": s.response_time, "completed": True} 
+        {"response_time": s.response_time_seconds or s.response_time or 0.0, "completed": True} 
         for s in history
     ]
 
@@ -80,10 +119,11 @@ def adjust_difficulty(
         "simplify_layout": result["simplify_layout"]
     }
 
-@router.get("/history/{patient_id}", response_model=List[GameSessionResponse])
-def get_game_history(patient_id: int, db: Session = Depends(get_db)):
-    # Caregivers can view game activity logs to monitor progress
+@router.get("/history/{user_id}", response_model=List[GameSessionResponse])
+def get_game_history(user_id: int, db: Session = Depends(get_db)):
+    # Progress Analytics: SELECT * FROM game_sessions WHERE user_id = :active_user_id ORDER BY completed_at ASC;
     history = db.query(GameSession).filter(
-        GameSession.patient_id == patient_id
-    ).order_by(GameSession.completed_at.desc()).all()
+        (GameSession.user_id == user_id) | (GameSession.patient_id == user_id)
+    ).order_by(GameSession.completed_at.asc()).all()
     return history
+

@@ -42,13 +42,20 @@ class PatientResponse(PatientBase):
 class MemoryBase(BaseModel):
     title: str
     description: Optional[str] = None
+    category_name: Optional[str] = "Important Events"
+    photo_url: Optional[str] = None
+    voice_recording_url: Optional[str] = None
+    is_custom: Optional[bool] = False
+    year: Optional[int] = None
 
 class MemoryCreate(MemoryBase):
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
 
 class MemoryResponse(MemoryBase):
     id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     image_path: Optional[str] = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
@@ -58,14 +65,16 @@ class MemoryResponse(MemoryBase):
 
 class MemoryVoiceRecordingCreate(BaseModel):
     memory_id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     audio_path: str
     duration: Optional[float] = None
 
 class MemoryVoiceRecordingResponse(BaseModel):
     id: int
     memory_id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     audio_path: str
     duration: Optional[float] = None
     created_at: datetime.datetime
@@ -77,13 +86,17 @@ class MemoryVoiceRecordingResponse(BaseModel):
 class FamilyMemberBase(BaseModel):
     name: str
     relationship: str
+    image_url: Optional[str] = None
+    voice_recording_url: Optional[str] = None
 
 class FamilyMemberCreate(FamilyMemberBase):
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
 
 class FamilyMemberResponse(FamilyMemberBase):
     id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     image_path: Optional[str] = None
     created_at: datetime.datetime
 
@@ -92,14 +105,16 @@ class FamilyMemberResponse(FamilyMemberBase):
 
 class FamilyVoiceRecordingCreate(BaseModel):
     family_member_id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     audio_path: str
     duration: Optional[float] = None
 
 class FamilyVoiceRecordingResponse(BaseModel):
     id: int
     family_member_id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     audio_path: str
     duration: Optional[float] = None
     created_at: datetime.datetime
@@ -113,15 +128,18 @@ class GameSessionBase(BaseModel):
     difficulty: str # "Easy", "Medium", "Hard"
     score: int
     accuracy: float
-    response_time: float
+    response_time_seconds: Optional[float] = None
+    response_time: Optional[float] = None
     attempts: int
 
 class GameSessionCreate(GameSessionBase):
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
 
 class GameSessionResponse(GameSessionBase):
     id: int
-    patient_id: int
+    patient_id: Optional[int] = None
+    user_id: Optional[int] = None
     completed_at: datetime.datetime
 
     class Config:
@@ -146,6 +164,30 @@ class RoutineItemResponse(RoutineItemBase):
     class Config:
         from_attributes = True
 
+# --- PHOTO RECALL ITEM SCHEMAS ---
+class PhotoRecallItemBase(BaseModel):
+    person_name: str
+    relationship: Optional[str] = None
+    description: Optional[str] = None
+
+class PhotoRecallItemCreate(PhotoRecallItemBase):
+    user_id: Optional[int] = None
+    patient_id: Optional[int] = None
+    image_path: str
+    image_url: Optional[str] = None
+
+class PhotoRecallItemResponse(PhotoRecallItemBase):
+    id: int
+    user_id: int
+    patient_id: Optional[int] = None
+    image_path: str
+    image_url: Optional[str] = None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
 # --- AUTHENTICATION TOKEN SCHEMAS ---
 class Token(BaseModel):
     access_token: str
@@ -160,3 +202,4 @@ class DifficultyAdjustmentResponse(BaseModel):
     reduce_visual_clues: bool
     trigger_audio_guidance: bool
     simplify_layout: bool
+
